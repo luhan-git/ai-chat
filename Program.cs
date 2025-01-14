@@ -2,9 +2,9 @@
 using OpenAI;
 using Microsoft.Extensions.AI;
 
-var config=new ConfigurationBuilder().AddUserSecrets<Program>().Build();
-string model=config["Modelname"]??"openai";
-string key=config["OpenAIkey"]??"key";
+var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
+string model = config["Modelname"] ?? "openai";
+string key = config["OpenAIkey"] ?? "key";
 
 IChatClient chatClient =
     new OpenAIClient(key).AsChatClient(model);
@@ -16,14 +16,14 @@ List<ChatMessage> chatHistory =
         """)
     ];
 
-    while (true)
+while (true)
 {
     // Get user prompt and add to chat history
     Console.WriteLine("Your prompt:");
     var userPrompt = Console.ReadLine();
     chatHistory.Add(new ChatMessage(ChatRole.User, userPrompt));
 
-    // Stream the AI response and add to chat history
+    // Stream the AI response and add to chat history a
     Console.WriteLine("AI Response:");
     var response = "";
     await foreach (var item in
