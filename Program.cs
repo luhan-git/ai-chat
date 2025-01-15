@@ -18,7 +18,7 @@ List<ChatMessage> chatHistory =
 
 while (true)
 {
-    // Get user prompt and add to chat history
+    // Get user prompt and add to chat history aa
     Console.WriteLine("Your prompt:");
     var userPrompt = Console.ReadLine();
     chatHistory.Add(new ChatMessage(ChatRole.User, userPrompt));
