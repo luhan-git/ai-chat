@@ -1,37 +1,23 @@
-﻿using Microsoft.Extensions.Configuration;
-using OpenAI;
-using Microsoft.Extensions.AI;
+﻿using System.Text.Json;
+using ai_chat;
+using ai_chat.Dependencies;
+using Microsoft.Extensions.DependencyInjection;
 
-var config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
-string model = config["Modelname"] ?? "openai";
-string key = config["OpenAIkey"] ?? "key";
-
-IChatClient chatClient =
-    new OpenAIClient(key).AsChatClient(model);
-
-List<ChatMessage> chatHistory =
-    [
-        new ChatMessage(ChatRole.System, """
-            Eres un asistente malhablado
-        """)
-    ];
-
+var services = new ServiceCollection();
+services.AddDependencies();
+var serviceProvider = services.BuildServiceProvider();
+var ollama=serviceProvider.GetRequiredService<IOllama>();
+var speaker = serviceProvider.GetRequiredService<ISpeech>();
 while (true)
 {
-    // Get user prompt and add to chat history aa
-    Console.WriteLine("Your prompt:");
-    var userPrompt = Console.ReadLine();
-    chatHistory.Add(new ChatMessage(ChatRole.User, userPrompt));
-
-    // Stream the AI response and add to chat history a
-    Console.WriteLine("AI Response:");
-    var response = "";
-    await foreach (var item in
-        chatClient.CompleteStreamingAsync(chatHistory))
-    {
-        Console.Write(item.Text);
-        response += item.Text;
-    }
-    chatHistory.Add(new ChatMessage(ChatRole.Assistant, response));
-    Console.WriteLine();
+    Console.WriteLine("user:");
+    var question = Console.ReadLine();
+    if(string.IsNullOrEmpty(question)) continue;
+    if(question=="exit") break;
+    var response=await ollama.AskAsync(question);
+    using var doc = JsonDocument.Parse(response);
+    var content = doc.RootElement.GetProperty("message").GetProperty("content").GetString() ?? "Sin respuesta";
+    Console.WriteLine(content);
+    var filePath=await speaker.SpeakAsync(content);
+    await speaker.PlayAudioAsync(filePath);
 }
