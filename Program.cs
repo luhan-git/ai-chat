@@ -8,15 +8,14 @@ services.AddDependencies();
 var serviceProvider = services.BuildServiceProvider();
 var ollama=serviceProvider.GetRequiredService<IOllama>();
 var speaker = serviceProvider.GetRequiredService<ISpeech>();
+var recordAudio= serviceProvider.GetRequiredService<IRecordAudio>();
 while (true)
 {
-    Console.WriteLine("user:");
-    var question = Console.ReadLine();
-    if(string.IsNullOrEmpty(question)) continue;
-    if(question=="exit") break;
+    var file =await recordAudio.StartRecording();
+    var question = await recordAudio.GetRecording(file);
     var response=await ollama.AskAsync(question);
     using var doc = JsonDocument.Parse(response);
-    var content = doc.RootElement.GetProperty("message").GetProperty("content").GetString() ?? "Sin respuesta";
+    var content = doc.RootElement.GetProperty("message").GetProperty("content").GetString() ?? response;
     Console.WriteLine(content);
     var filePath=await speaker.SpeakAsync(content);
     await speaker.PlayAudioAsync(filePath);

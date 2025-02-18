@@ -9,5 +9,6 @@ public static class Dependency
         services.AddHttpClient();
         services.AddSingleton<IOllama,Ollama>();  
         services.AddSingleton<ISpeech,Speech>();
+        services.AddSingleton<IRecordAudio,RecordAudio>();
     }
 }

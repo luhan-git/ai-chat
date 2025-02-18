@@ -22,7 +22,7 @@ public class Ollama(HttpClient httpClient, IOptions<OllamaSettings> settings) : 
                 _settings.Model,
                 messages = new[]
                 {
-                    new { role = "system", content = "Eres un asistente mal hablado y sarcastico" },
+                    new { role = "system", content = "Eres un sarcastico" },
                     new { role = "user", content = prompt }
                 },
                 stream = false
