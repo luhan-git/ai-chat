@@ -9,9 +9,9 @@ public interface IOllama
 {
     Task<string> AskAsync(string question);
 }
-public class Ollama(HttpClient httpClient, IOptions<OllamaSettings> settings) : IOllama
+public class Ollama(HttpClient httpClient, IOptions<OllamaSettings> ollamaSettings) : IOllama
 {
-    private readonly OllamaSettings _settings = settings.Value;
+    private readonly OllamaSettings _ollamaSettings = ollamaSettings.Value;
 
     public async Task<string> AskAsync(string prompt)
     {
@@ -19,10 +19,10 @@ public class Ollama(HttpClient httpClient, IOptions<OllamaSettings> settings) : 
         {
             var requestBody = new
             {
-                _settings.Model,
+                _ollamaSettings.Model,
                 messages = new[]
                 {
-                    new { role = "system", content = "Eres un sarcastico" },
+                    new { role = "system", content = "Eres un asistente sarcastico" },
                     new { role = "user", content = prompt }
                 },
                 stream = false
@@ -30,15 +30,17 @@ public class Ollama(HttpClient httpClient, IOptions<OllamaSettings> settings) : 
 
             var jsonRequest = JsonSerializer.Serialize(requestBody);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(_settings.ApiUrl, content);
+            var response = await httpClient.PostAsync(_ollamaSettings.ApiUrl, content);
             response.EnsureSuccessStatusCode();
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            return jsonResponse;
+            using var doc = JsonDocument.Parse(jsonResponse);
+            var result = doc.RootElement.GetProperty("message").GetProperty("content").GetString()??"la propiedad content  no ha sido encontrada";
+            return result;
         }
         catch (HttpRequestException ex)
         {
             Console.WriteLine($"Error en la solicitud HTTP: {ex.Message}");
-            return "Error en la solicitud HTTP.";
+            return "La solicitud a ollama no ha sido exitosa";
         }
         catch (Exception ex)
         {

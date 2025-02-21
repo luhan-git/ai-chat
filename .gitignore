@@ -3,3 +3,5 @@ obj/
 .idea/
 .vscode/
 /Content/*
+log.txt
+appsettings.json
